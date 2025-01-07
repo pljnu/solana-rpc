@@ -1,9 +1,11 @@
-# Solana RPC
+<h1 align="center">Solana RPC</h1>
 
 > [!NOTE]
 > This repo contains steps to configure a **slightly** more performant RPC than a **regular** one
 
-## Sol User
+## 🤖 Server
+
+### Sol User
 
 Create a new Ubuntu user, named `sol`, for running the validator:
 
@@ -13,24 +15,30 @@ sudo adduser sol
 
 It is a best practice to always run your validator as a non-root user, like the `sol` user we just created.
 
-## Ports Opening
+### Ports Opening
 
 Note: RPC port remains closed, only SSH and gossip ports are opened.
 
 For new machines with UFW disabled:
 
 1. Add OpenSSH first to prevent lockout if you don't have password access
-2. Open required ports:
+2. Open required ports
+3. Close RPC port
 
 ```bash
+sudo ufw enable
+
+sudo ufw allow 22/tcp
 sudo ufw allow 8000:8020/tcp
 sudo ufw allow 8000:8020/udp
 
 sudo ufw deny 8899/tcp
 sudo ufw deny 8899/udp
+
+sudo ufw reload
 ```
 
-## Hard Drive Setup
+### Hard Drive Setup
 
 On your Ubuntu computer make sure that you have at least `2TB` of disk space mounted. You can check disk space using the `df` command:
 
@@ -44,7 +52,7 @@ To see the hard disk devices that you have available, use the list block devices
 lsblk -f
 ```
 
-### Drive Formatting: Ledger
+#### Drive Formatting: Ledger
 
 Assuming you have an nvme drive that is not formatted, you will have to format the drive and then mount it.
 
@@ -63,7 +71,7 @@ lsblk -f
 
 In the fourth column, next to your device name, you should see a string of letters and numbers that look like this: `6abd1aa5-8422-4b18-8058-11f821fd3967`. That is the UUID for the device
 
-### Mounting Your Drive: Ledger
+#### Mounting Your Drive: Ledger
 
 So far we have created a formatted drive, but you do not have access to it until you mount it. Make a directory for mounting your drive:
 
@@ -83,7 +91,7 @@ Now you can mount the drive:
 sudo mount -o noatime /dev/nvme0n1 /mnt/ledger
 ```
 
-### Formatting And Mounting Drive: AccountsDB
+#### Formatting And Mounting Drive: AccountsDB
 
 You will also want to mount the accounts db on a separate hard drive. The process will be similar to the ledger example above.
 
@@ -118,7 +126,7 @@ sudo mount -o noatime  /dev/nvme1n1 /mnt/accounts
 ```
 
 
-### Modify fstab
+#### Modify fstab
 
 ```bash
 sudo vi /etc/fstab
@@ -141,7 +149,7 @@ UUID="03477038-6fa7-4de3-9ca6-4b0aef52bf42" /mnt/ledger xfs defaults,noatime 0 2
 UUID="68ff3738-f9f7-4423-a24c-68d989a2e496" /mnt/accounts xfs defaults,noatime 0 2
 ```
 
-## Installing Agave Client
+## 🌵 Agave Client
 
 ### Install rustc, cargo and rustfmt
 
@@ -183,7 +191,7 @@ export RUSTFLAGS="-C link-arg=-fuse-ld=lld -C target-cpu=native -C opt-level=3"
 export PATH=$PWD/bin:$PATH
 ```
 
-## System Tuning
+## 🦾 System Tuning
 
 ### Set CPU Governor to `Performance`
 
@@ -243,7 +251,6 @@ EOF"
 sudo sysctl -p /etc/sysctl.d/21-agave-validator.conf
 ```
 
-
 ### Increase systemd and session file limits
 
 Add
@@ -271,6 +278,9 @@ EOF"
 ```
 
 ### Isolate one core for PoH
+
+> [!NOTE]
+> Many thanks for that guide to [ax | 1000x.sh](https://discord.com/channels/428295358100013066/811317327609856081/1257995317190852651)
 
 find out the nearest available core. in most cases, it's core 2 (cores 0 and 1 are often used by the kernel). if you have more cores, you can choose another available nearest core.
 
@@ -302,9 +312,10 @@ in my case the hyperthread for core 2 is 26
 GRUB_CMDLINE_LINUX_DEFAULT="quiet amd_pstate=passive nohz_full=2,26 isolcpus=domain,managed_irq,2,26 irqaffinity=0-1,3-25,27-47"
 ```
 
-nohz_full=2,26: enables full dynamic ticks for core 2 and its hyperthread 26 to reducing overhead and latency.
-isolcpus=domain,managed_irq,2,26: isolates core 2 and hyperthread 26 from the general scheduler
-irqaffinity=0-1,3-25,27-47: directs interrupts away from core 2 and hyperthread 26 
+> [!NOTE]
+> `nohz_full=2,26`-  enables full dynamic ticks for core 2 and its hyperthread 26 to reducing overhead and latency.
+> `isolcpus=domain,managed_irq,2,26` - isolates core 2 and hyperthread 26 from the general scheduler
+> `irqaffinity=0-1,3-25,27-47` - directs interrupts away from core 2 and hyperthread 26 
 
 #### Set the poh thread to core 2
 
@@ -323,18 +334,15 @@ you can take my bash script to identify the pid of solpohtickprod and set it to 
 ```bash
 #!/bin/bash
 
-# wait to load the binary
-#sleep 120
-
-# main pid of solana-validator
-solana_pid=$(pgrep -f "^agave-validator --identity")
-if [ -z "$solana_pid" ]; then
-    logger "set_affinity: solana_validator_404"
+# main pid of agave-validator
+agave_pid=$(pgrep -f "^agave-validator --identity")
+if [ -z "$agave_pid" ]; then
+    logger "set_affinity: agave_validator_404"
     exit 1
 fi
 
 # find thread id
-thread_pid=$(ps -T -p $solana_pid -o spid,comm | grep 'solPohTickProd' | awk '{print $1}')
+thread_pid=$(ps -T -p $agave_pid -o spid,comm | grep 'solPohTickProd' | awk '{print $1}')
 if [ -z "$thread_pid" ]; then
     logger "set_affinity: solPohTickProd_404"
     exit 1
@@ -351,7 +359,8 @@ else
      # $thread_pid
 fi
 ```
-## Create a Validator Startup Script
+
+## 🚀 Validator Startup
 
 ```bash
 mkdir -p /home/sol/bin
@@ -359,7 +368,7 @@ touch /home/sol/bin/validator.sh
 chmod +x /home/sol/bin/validator.sh
 ```
 
-Next, open the `validator.sh` file for editing:
+Next, open the [`validator.sh`](./validator.sh) file for editing:
 
 ```bash
 vi /home/sol/bin/validator.sh
@@ -370,9 +379,9 @@ Then
 chmod +x /home/sol/bin/validator.sh
 ```
 
-## Create a System Service
+### Create a System Service
 
-You can use the `sol.service` from this repo or `sudo vi /etc/systemd/system/sol.service` and paste
+You can use the [`sol.service`](./sol.service) from this repo or `sudo vi /etc/systemd/system/sol.service` and paste
 
 ```
 [Unit]
@@ -397,7 +406,7 @@ WantedBy=multi-user.target
 
 ### Setup log rotation
 
-You can use the `logrotate.sol` from this repo run the next commands
+You can use the [`logrotate.sol`](./logrotate.sol) from this repo run the next commands
 
 ```bash
 cat > logrotate.sol <<EOF
@@ -431,11 +440,11 @@ sudo systemctl enable --now sol
 sudo systemctl status sol.service
 ```
 
-## Credits
+## 🎉 Credits
 
 - [Anza](https://docs.anza.xyz/operations/setup-a-validator)
 - [1000x.sh](https://1000x.sh/)
 
-## Links
+## 🔗 Links
 
 - [XFS Performance](https://wiki.archlinux.org/title/XFS#Performance)
