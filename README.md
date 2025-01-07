@@ -5,6 +5,34 @@
 
 ## 🤖 Server
 
+### Requirements
+
+[Solana Hardware Compatibility List](https://solanahcl.org/) can be found here
+
+- **CPU**
+  - `2.8GHz` base clock speed, or faster
+  - `16` cores / `32` threads, or more
+  - SHA extensions instruction support
+  - AMD Gen 3 or newer
+  - Intel Ice Lake or newer
+  - Higher clock speed is preferable over more cores
+  - AVX2 instruction support (to use official release binaries, self-compile otherwise)
+  - Support for AVX512f is helpful
+- **RAM** 
+  - `256GB` or more (for account indexes)
+  - Error Correction Code (ECC) memory is suggested
+  - Motherboard with 512GB capacity suggested
+- **Disk**
+  - **Accounts:** `500GB`, or larger. High TBW (Total Bytes Written)
+  - **Ledger:** `1TB` or larger. High TBW suggested
+  - **Snapshots:** `250GB` or larger. High TBW suggested
+  - **OS:** (Optional) `500GB`, or larger. SATA OK
+
+Consider a larger ledger disk if longer transaction history is required
+
+> [!CAUTION]
+> Accounts and ledger **should not be** stored on the same disk
+
 ### Sol User
 
 Create a new Ubuntu user, named `sol`, for running the validator:
@@ -255,12 +283,12 @@ sudo sysctl -p /etc/sysctl.d/21-agave-validator.conf
 
 Add
 
-```
+```ini
 LimitNOFILE=2000000
 ```
 to the `[Service]` section of your systemd service file, if you use one, otherwise add
 
-```
+```ini
 DefaultLimitNOFILE=2000000
 ```
 
@@ -313,9 +341,9 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet amd_pstate=passive nohz_full=2,26 isolcpus=dom
 ```
 
 > [!NOTE]
-> `nohz_full=2,26`-  enables full dynamic ticks for core 2 and its hyperthread 26 to reducing overhead and latency.
-> `isolcpus=domain,managed_irq,2,26` - isolates core 2 and hyperthread 26 from the general scheduler
-> `irqaffinity=0-1,3-25,27-47` - directs interrupts away from core 2 and hyperthread 26 
+> - `nohz_full=2,26` enables full dynamic ticks for core 2 and its hyperthread 26 to reducing overhead and latency.
+> - `isolcpus=domain,managed_irq,2,26` isolates core 2 and hyperthread 26 from the general scheduler
+> - `irqaffinity=0-1,3-25,27-47` directs interrupts away from core 2 and hyperthread 26 
 
 #### Set the poh thread to core 2
 
@@ -383,7 +411,7 @@ chmod +x /home/sol/bin/validator.sh
 
 You can use the [`sol.service`](./sol.service) from this repo or `sudo vi /etc/systemd/system/sol.service` and paste
 
-```
+```ini
 [Unit]
 Description=Solana Validator
 After=network.target
@@ -440,10 +468,22 @@ sudo systemctl enable --now sol
 sudo systemctl status sol.service
 ```
 
+## 📝 Cheat Sheet
+
+| Command                          | Description                         |
+| -------------------------------- | ----------------------------------- |
+| `tail -f ~/agave-validator.log`  | follow the logs of the Agave node   |
+| `agave-validator monitor`        | monitor the validator               |
+| `solana validators`              | check list of validators            |
+| `solana catchup --our-localhost` | check how far it is from chain head |
+| `btop`                           | monitor server resources            |
+| `iostat -mdx`                    | check NVMe utilization              |
+
 ## 🎉 Credits
 
-- [Anza](https://docs.anza.xyz/operations/setup-a-validator)
-- [1000x.sh](https://1000x.sh/)
+- [Anza](https://docs.anza.xyz/operations/setup-an-rpc-node)
+- [1000x.sh](https://1000x.sh)
+- [StakeWare](https://www.stakeware.xyz)
 
 ## 🔗 Links
 
