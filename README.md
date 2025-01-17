@@ -227,6 +227,35 @@ export PATH=$PWD/bin:$PATH
 echo "performance" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
 ```
 
+### Disable THP (Transparent Huge Pages)
+
+Linux transparent huge page (THP) support allows the kernel to automatically promote regular memory pages into huge pages.
+Huge pages reduces TLB pressure, but THP support introduces latency spikes when pages are promoted into huge pages and when memory compaction is triggered.
+
+```bash
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+```
+
+### Disable KSM (Kernel Samepage Merging)
+
+Linux kernel samepage merging (KSM) is a feature that de-duplicates memory pages that contains identical data.
+The merging process needs to lock the page tables and issue TLB shootdowns, leading to unpredictable memory access latencies.
+KSM only operates on memory pages that has been opted in to samepage merging using `madvise(...MADV_MERGEABLE)`.
+If needed KSM can be disabled system wide by running the following command:
+
+```bash
+echo 0 > /sys/kernel/mm/ksm/run
+```
+
+### Disable automatic NUMA memory balancing
+
+Linux supports automatic page fault based NUMA memory balancing and manual page migration of memory between NUMA nodes.
+Migration of memory pages between NUMA nodes will cause TLB shootdowns and page faults for applications using the affected memory
+
+```bash
+echo 0 > /proc/sys/kernel/numa_balancing
+```
+
 ### Sysctl Tuning
 
 ```bash
@@ -337,7 +366,11 @@ in my case the hyperthread for core 2 is 26
 `/etc/default/grub` (dont forget to run update-grub and reboot afterwards) 
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet amd_pstate=passive nohz_full=2,26 isolcpus=domain,managed_irq,2,26 irqaffinity=0-1,3-25,27-47"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet amd_pstate=passive nvme_core.default_ps_max_latency_us=0 nohz_full=2,26 isolcpus=domain,managed_irq,2,26 irqaffinity=0-1,3-25,27-47"
+```
+
+```sh
+update-grub
 ```
 
 > [!NOTE]
