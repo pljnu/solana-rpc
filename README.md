@@ -272,6 +272,20 @@ Migration of memory pages between NUMA nodes will cause TLB shootdowns and page 
 echo 0 > /proc/sys/kernel/numa_balancing
 ```
 
+### Huge and Gigantic Pages
+
+```bash
+sudo mkdir -p /mnt/hugepages
+sudo mount -t hugetlbfs -o pagesize=2097152,min_size=228589568 none /mnt/hugepages
+
+sudo mkdir -p /mnt/gigantic
+sudo mount -t hugetlbfs -o pagesize=1073741824,min_size=27917287424 none /mnt/gigantic
+
+cat /proc/mounts | grep hugetlbfs
+# none /mnt/hugepages hugetlbfs rw,seclabel,relatime,pagesize=2M,min_size=95124124 0 0
+# none /mnt/gigantic hugetlbfs rw,seclabel,relatime,pagesize=1024M,min_size=540092137472 0 0
+```
+
 ### Sysctl Tuning
 
 ```bash
