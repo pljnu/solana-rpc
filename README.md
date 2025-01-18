@@ -191,6 +191,8 @@ When building the master branch, please make sure you are using the latest stabl
 
 ```bash
 rustup update
+rustup default nightly
+rustup override set nightly
 ```
 
 you may need to install libssl-dev, pkg-config, zlib1g-dev, protobuf etc.
@@ -211,11 +213,25 @@ export TAG="v2.1.7"
 git switch tags/$TAG --detach
 ```
 
+### Modify `profile.release`
+
+```bash
+vi Cargo.toml
+```
+
+```diff
+[profile.release]
+split-debuginfo = "unpacked"
+-lto = "thin"
++lto = "fat"
++codegen-units = 1
+```
+
 ### Build
 
 ```bash
-export RUSTFLAGS="-C link-arg=-fuse-ld=lld -C target-cpu=native -C opt-level=3"
-./scripts/cargo-install-all.sh .
+export RUSTFLAGS="-Clink-arg=-fuse-ld=lld -Ctarget-cpu=native"
+./scripts/cargo-install-all.sh  --validator-only .
 export PATH=$PWD/bin:$PATH
 ```
 
