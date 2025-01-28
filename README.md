@@ -420,7 +420,7 @@ add the cli to your validator
 
 there is a bug with core_affinity if you isolate your cores: [link](https://github.com/anza-xyz/agave/issues/1968)
 
-you can take my bash script to identify the pid of solpohtickprod and set it to eg. core 2
+you can take the next bash script to identify the pid of solpohtickprod and set it to eg. core 2
 
 ```bash
 #!/bin/bash
@@ -457,7 +457,7 @@ fi
 mkdir -p /home/sol/bin
 ```
 
-Next, open the [`validator.sh`](./validator.sh) file for editing:
+Next, open the [`validator.sh`](./bin/validator.sh) file for editing:
 
 ```bash
 vi /home/sol/bin/validator.sh
@@ -470,7 +470,7 @@ chmod +x /home/sol/bin/validator.sh
 
 ### Create a System Service
 
-You can use the [`sol.service`](./sol.service) from this repo or `sudo vi /etc/systemd/system/sol.service` and paste
+You can use the [`sol.service`](./system/sol.service) from this repo or `sudo vi /etc/systemd/system/sol.service` and paste
 
 ```ini
 [Unit]
@@ -568,20 +568,20 @@ export LEDGER_DIR=/mnt/ledger; bash -c "$(curl -fsSL https://raw.githubuserconte
 ```
 
 
-Next, open the [`shreadstream.sh`](./shreadstream.sh) file for editing:
+Next, open the [`shredstream.sh`](./bin/shredstream.sh) file for editing:
 
 ```bash
-vi /home/sol/bin/shreadstream.sh
+vi /home/sol/bin/shredstream.sh
 ```
 Then
 
 ```bash
-chmod +x /home/sol/bin/shreadstream.sh
+chmod +x /home/sol/bin/shredstream.sh
 ```
 
 #### Create a System Service
 
-You can use the [`shreadstream.service`](./shreadstream.service) from this repo or `sudo vi /etc/systemd/system/shreadstream.service` and paste
+You can use the [`shredstream.service`](./system/shredstream.service) from this repo or `sudo vi /etc/systemd/system/shredstream.service` and paste
 
 ```ini
 [Unit]
@@ -606,11 +606,11 @@ WantedBy=multi-user.target
 #### Enable and start System Service
 
 ```bash
-sudo systemctl enable --now shreadstream
+sudo systemctl enable --now shredstream
 ```
 
 ```bash
-sudo systemctl status shreadstream.service
+sudo systemctl status shredstream.service
 ```
 
 ## 📝 Cheat Sheet
