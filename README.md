@@ -455,8 +455,6 @@ fi
 
 ```bash
 mkdir -p /home/sol/bin
-touch /home/sol/bin/validator.sh
-chmod +x /home/sol/bin/validator.sh
 ```
 
 Next, open the [`validator.sh`](./validator.sh) file for editing:
@@ -531,6 +529,90 @@ sudo systemctl enable --now sol
 sudo systemctl status sol.service
 ```
 
+### Setup Shredstream Proxy
+
+Jito’s ShredStream service delivers the lowest latency shreds from leaders on the Solana network, optimizing performance for high-frequency trading, validation, and RPC operations.
+ShredStream ensures minimal latency for receiving shreds, which can save hundreds of milliseconds during trading on Solana—a critical advantage in high-frequency trading environments.
+Additionally, it provides a redundant shred path for servers in remote locations, enhancing reliability and performance for users operating in less connected regions.
+This makes ShredStream particularly valuable for traders, validators, and node operators who require the fastest and most reliable data to maintain a competitive edge.
+
+#### Download the source code
+
+```bash
+git clone https://github.com/jito-labs/shredstream-proxy.git --recurse-submodules
+cd shredstream-proxy
+```
+
+#### Build 
+
+```bash
+export RUSTFLAGS="-Clink-arg=-fuse-ld=lld -Ctarget-cpu=native"
+cargo build --release --bin jito-shredstream-proxy
+
+mkdir ./bin
+cp target/release/jito-shredstream-proxy ./bin/jito-shredstream-proxy
+export PATH=$PWD/bin:$PATH
+```
+
+#### Preparation
+
+1. Get your Solana [public key approved](https://web.miniextensions.com/WV3gZjFwqNqITsMufIEp)
+2. Ensure your firewall is open.
+  - Default port for incoming shreds is **20000/udp.**
+  - NAT connections currently not supported.
+  - If you use a firewall, see the firewall [configuration section](https://docs.jito.wtf/lowlatencytxnfeed/#firewall-configuration)
+3. Find your TVU port
+
+```bash
+export LEDGER_DIR=/mnt/ledger; bash -c "$(curl -fsSL https://raw.githubusercontent.com/jito-labs/shredstream-proxy/master/scripts/get_tvu_port.sh)"
+```
+
+
+Next, open the [`shreadstream.sh`](./shreadstream.sh) file for editing:
+
+```bash
+vi /home/sol/bin/shreadstream.sh
+```
+Then
+
+```bash
+chmod +x /home/sol/bin/shreadstream.sh
+```
+
+#### Create a System Service
+
+You can use the [`shreadstream.service`](./shreadstream.service) from this repo or `sudo vi /etc/systemd/system/shreadstream.service` and paste
+
+```ini
+[Unit]
+Description=Shredstream Proxy
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+LogRateLimitIntervalSec=0
+User=sol
+Environment="PATH=/home/sol/shredstream-proxy/bin"
+Environment="RUST_LOG=info"
+ExecStart=/home/sol/bin/shredstream.sh
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### Enable and start System Service
+
+```bash
+sudo systemctl enable --now shreadstream
+```
+
+```bash
+sudo systemctl status shreadstream.service
+```
+
 ## 📝 Cheat Sheet
 
 | Command                          | Description                         |
@@ -547,6 +629,7 @@ sudo systemctl status sol.service
 - [Anza](https://docs.anza.xyz/operations/setup-an-rpc-node)
 - [1000x.sh](https://1000x.sh)
 - [StakeWare](https://www.stakeware.xyz)
+- [Jito](https://docs.jito.wtf/lowlatencytxnfeed/)
 
 ## 🔗 Links
 

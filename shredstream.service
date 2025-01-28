@@ -1,0 +1,17 @@
+[Unit]
+Description=Shredstream Proxy
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+LogRateLimitIntervalSec=0
+User=sol
+Environment="PATH=/home/sol/shredstream-proxy/bin"
+Environment="RUST_LOG=info"
+ExecStart=/home/sol/bin/shredstream.sh
+
+[Install]
+WantedBy=multi-user.target
