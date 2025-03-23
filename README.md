@@ -208,30 +208,46 @@ sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang cma
 git clone https://github.com/anza-xyz/agave.git
 cd agave
 
-# let's asume we would like to build v2.1.7 of validator
-export TAG="v2.1.7" 
+# let's asume we would like to build v2.1.16 of validator
+export TAG="v2.1.16" 
 git switch tags/$TAG --detach
 ```
 
-### Modify `profile.release`
+### Add `profile.release-with-lto`
 
 ```bash
 vi Cargo.toml
 ```
 
 ```diff
-[profile.release]
-split-debuginfo = "unpacked"
--lto = "thin"
++[profile.release-with-lto]
++inherits = "release"
 +lto = "fat"
 +codegen-units = 1
+```
+
+```bash
+vi ./scripts/cargo-install-all.sh
+```
+
+```diff
+buildProfileArg='--profile release-with-debug'
+      buildProfile='release-with-debug'
+      shift
++elif [[ $1 = --release-with-lto ]]; then
++      buildProfileArg='--profile release-with-lto'
++      buildProfile='release-with-lto'
++      shift
+elif [[ $1 = --validator-only ]]; then
+      validatorOnly=true
+      shift
 ```
 
 ### Build
 
 ```bash
 export RUSTFLAGS="-Clink-arg=-fuse-ld=lld -Ctarget-cpu=native"
-./scripts/cargo-install-all.sh  --validator-only .
+./scripts/cargo-install-all.sh  --release-with-lto --validator-only .
 export PATH=$PWD/bin:$PATH
 ```
 

@@ -23,7 +23,6 @@ RPC="
     --dynamic-port-range 8000-8020
     --full-rpc-api
     --private-rpc
-    --only-known-rpc
     --rpc-send-leader-count 3
     --rpc-pubsub-enable-block-subscription
     --enable-rpc-transaction-history
@@ -38,6 +37,7 @@ POH="
 "
 
 LEDGER="
+    --accounts-db-hash-threads
     --ledger /mnt/ledger
     --accounts /mnt/accounts
     --rocksdb-shred-compaction fifo
