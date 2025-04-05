@@ -208,8 +208,8 @@ sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang cma
 git clone https://github.com/anza-xyz/agave.git
 cd agave
 
-# let's asume we would like to build v2.1.16 of validator
-export TAG="v2.1.16" 
+# let's asume we would like to build v2.18 of validator
+export TAG="v2.1.18" 
 git switch tags/$TAG --detach
 ```
 
@@ -468,6 +468,14 @@ fi
 ```
 
 ## 🚀 Validator Startup
+
+### Options
+
+```bash
+
+```
+
+### Let's use the common one
 
 ```bash
 mkdir -p /home/sol/bin
