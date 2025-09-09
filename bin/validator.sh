@@ -64,9 +64,6 @@ LEDGER=(
     --accounts /mnt/accounts
     # Keep this amount of shreds in root slots.
     --limit-ledger-size 50000000
-    # Enables faster starting of ledger-tool by skipping shrink. 
-    # This option is for use during testing.
-    --accounts-db-skip-shrink
     # Access account storages using this method [possible values: mmap, file]
     --accounts-db-access-storages-method file
     # Disable the disk-based accounts index. It is enabled by default.
@@ -86,9 +83,11 @@ SNAPSHOTS=(
     --minimal-snapshot-download-speed 20971520
     # The maximum number of full snapshot archives to hold on to when purging older snapshots. [default: 2]
     --maximum-full-snapshots-to-retain 1
+    # Number of slots between generating full snapshots [default: 50000]
+    --full-snapshot-interval-slots 25000
     # The maximum number of incremental snapshot archives to hold on to when purging older snapshots.
     # [default: 4]
-    --maximum-incremental-snapshots-to-retain 1
+    --maximum-incremental-snapshots-to-retain 2
 )
 
 LOG=(

@@ -57,6 +57,7 @@ For new machines with UFW disabled:
 sudo ufw enable
 
 sudo ufw allow 22/tcp
+sudo ufw allow 20000/udp
 sudo ufw allow 8000:8020/tcp
 sudo ufw allow 8000:8020/udp
 
@@ -116,7 +117,7 @@ sudo chown -R sol:sol /mnt/ledger
 Now you can mount the drive:
 
 ```bash
-sudo mount -o noatime /dev/nvme0n1 /mnt/ledger
+sudo mount -o noatime -o logbufs=0 -o nofail  /dev/nvme0n1 /mnt/ledger
 ```
 
 #### Formatting And Mounting Drive: AccountsDB
@@ -150,7 +151,7 @@ sudo chown -R sol:sol /mnt/accounts
 And lastly, mount the drive:
 
 ```bash
-sudo mount -o noatime  /dev/nvme1n1 /mnt/accounts
+sudo mount -o noatime -o logbufs=0 -o nofail   /dev/nvme1n1 /mnt/accounts
 ```
 
 
@@ -173,8 +174,8 @@ should contains something similar
 
 ...
 
-UUID="03477038-6fa7-4de3-9ca6-4b0aef52bf42" /mnt/ledger xfs defaults,noatime 0 2
-UUID="68ff3738-f9f7-4423-a24c-68d989a2e496" /mnt/accounts xfs defaults,noatime 0 2
+UUID="03477038-6fa7-4de3-9ca6-4b0aef52bf42" /mnt/ledger xfs defaults,noatime,logbufs=8,nofail 0 0
+UUID="68ff3738-f9f7-4423-a24c-68d989a2e496" /mnt/accounts xfs defaults,noatime,logbufs=8,nofail 0 0
 ```
 
 ## 🌵 Agave Client
@@ -199,7 +200,7 @@ you may need to install libssl-dev, pkg-config, zlib1g-dev, protobuf etc.
 
 ```bash
 sudo apt-get update
-sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang cmake make libprotobuf-dev protobuf-compiler lld
+sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang libclang-dev cmake make libprotobuf-dev protobuf-compiler lld
 ```
 
 ### Download the source code
@@ -208,8 +209,8 @@ sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang cma
 git clone https://github.com/anza-xyz/agave.git
 cd agave
 
-# let's asume we would like to build v2.2 of validator
-export TAG="v2.2.0" 
+# let's asume we would like to build v2.3.8 of validator
+export TAG="v2.3.8" 
 git switch tags/$TAG --detach
 ```
 
@@ -330,11 +331,13 @@ Add
 
 ```ini
 LimitNOFILE=2000000
+LimitMEMLOCK=2000000000
 ```
 to the `[Service]` section of your systemd service file, if you use one, otherwise add
 
 ```ini
 DefaultLimitNOFILE=2000000
+DefaultLimitMEMLOCK=2000000000
 ```
 
 to the `[Manager]` section of `/etc/systemd/system.conf`.
@@ -347,6 +350,8 @@ sudo systemctl daemon-reload
 sudo bash -c "cat >/etc/security/limits.d/90-solana-nofiles.conf <<EOF
 # Increase process file descriptor count limit
 * - nofile 2000000
+# Increase memory locked limit (kB)
+* - memlock 2000000
 EOF"
 ```
 
@@ -477,6 +482,7 @@ Type=simple
 Restart=always
 RestartSec=1
 LimitNOFILE=2000000
+LimitMEMLOCK=2000000000
 LogRateLimitIntervalSec=0
 User=sol
 Environment="PATH=/home/sol/agave/bin"
@@ -596,6 +602,10 @@ ExecStart=/home/sol/bin/shredstream.sh
 [Install]
 WantedBy=multi-user.target
 ```
+
+> [!NOTE]
+> do not forget to add rules for your firewall from the list 
+> https://docs.jito.wtf/lowlatencytxnfeed/#firewall-configuration
 
 #### Enable and start System Service
 

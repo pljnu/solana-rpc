@@ -8,6 +8,7 @@ Type=simple
 Restart=always
 RestartSec=1
 LimitNOFILE=2000000
+LimitMEMLOCK=2000000000
 LogRateLimitIntervalSec=0
 User=sol
 Environment="PATH=/home/sol/agave/bin"
