@@ -209,8 +209,8 @@ sudo apt-get install libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang lib
 git clone https://github.com/anza-xyz/agave.git
 cd agave
 
-# let's asume we would like to build v2.3.8 of validator
-export TAG="v2.3.8" 
+# let's asume we would like to build v3.0.7 of validator
+export TAG="v3.0.7" 
 git switch tags/$TAG --detach
 ```
 

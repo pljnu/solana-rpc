@@ -31,7 +31,7 @@ RPC=(
     # if --private-rpc is present, otherwise use --bind-address]
     --rpc-bind-address 0.0.0.0
     # Range to use for dynamically assigned ports [default: 8000-10000]
-    --dynamic-port-range 8000-8020
+    --dynamic-port-range 8000-8025
     # Expose RPC methods for querying chain state and transaction history
     --full-rpc-api
     # Do not publish the RPC port for use by others
@@ -43,6 +43,8 @@ RPC=(
     # Enable historical transaction info over JSON RPC, including the 'getConfirmedBlock' API.
     # This will cause an increase in disk usage and IOPS
     --enable-rpc-transaction-history
+    # Enable Geyser interface even if no Geyser configs are specified
+    --geyser-plugin-always-enabled
 )
 
 REPLAY=(
