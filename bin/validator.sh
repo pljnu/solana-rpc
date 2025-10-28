@@ -54,7 +54,15 @@ REPLAY=(
 
 POH=(
     # EXPERIMENTAL: Specify which CPU core PoH is pinned to
-    --experimental-poh-pinned-cpu-core 2
+    --experimental-poh-pinned-cpu-core 10
+
+)
+
+RETRANSMIT=(
+     # EXPERIMENTAL: Enable XDP zero copy for retransmit
+    --experimental-retransmit-xdp-zero-copy
+    # EXPERIMENTAL: Specify which CPU core XDP retransmit is pinned to
+    --experimental-retransmit-xdp-cpu-cores 1
 )
 
 LEDGER=(
@@ -109,4 +117,4 @@ REPORTING=(
     --no-os-disk-stats-reporting
 )
 
-exec agave-validator ${CONSENSUS[@]} ${GOSSIP[@]} ${RPC[@]} ${REPLAY[@]} ${POH[@]} ${LEDGER[@]} ${SNAPSHOTS[@]} ${LOG[@]} ${REPORTING[@]}
+exec agave-validator ${CONSENSUS[@]} ${GOSSIP[@]} ${RPC[@]} ${REPLAY[@]} ${POH[@]} ${RETRANSMIT[@]} ${LEDGER[@]} ${SNAPSHOTS[@]} ${LOG[@]} ${REPORTING[@]}

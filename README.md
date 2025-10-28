@@ -369,25 +369,25 @@ lstopo
 ```
 
 check your cores and hyperthreads
-look at the "cores" table to find your core and its hyperthread. for example, if you choose core 2, its hyperthread might be 26 (in my case)
+look at the "cores" table to find your core and its hyperthread. for example, if you choose core 10, its hyperthread might be 34 (in my case)
 
 ```bash
 lscpu --all -e
 ```
 
-the easiest way to find the hyperthread for eg core 2:
+the easiest way to find the hyperthread for eg core 10:
 
 ```bash
-cat /sys/devices/system/cpu/cpu2/topology/thread_siblings_list
+cat /sys/devices/system/cpu/cpu10/topology/thread_siblings_list
 ```
 
 #### Isolate the core and its hyperthread
 
-in my case the hyperthread for core 2 is 26
-`/etc/default/grub` (dont forget to run update-grub and reboot afterwards) 
+in my case the hyperthread for core 10 is 34
+`/etc/default/grub` (don't forget to run update-grub and reboot afterwards) 
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet amd_pstate=passive nvme_core.default_ps_max_latency_us=0 nohz_full=2,26 isolcpus=domain,managed_irq,2,26 irqaffinity=0-1,3-25,27-47"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet amd_pstate=passive nvme_core.default_ps_max_latency_us=0 nohz_full=10,34 isolcpus=domain,managed_irq,10,34 irqaffinity=0-9,11-33,35-47"
 ```
 
 ```sh
@@ -395,23 +395,23 @@ update-grub
 ```
 
 > [!NOTE]
-> - `nohz_full=2,26` enables full dynamic ticks for core 2 and its hyperthread 26 to reducing overhead and latency.
-> - `isolcpus=domain,managed_irq,2,26` isolates core 2 and hyperthread 26 from the general scheduler
-> - `irqaffinity=0-1,3-25,27-47` directs interrupts away from core 2 and hyperthread 26 
+> - `nohz_full=10,34` enables full dynamic ticks for core 10 and its hyperthread 34 to reducing overhead and latency.
+> - `isolcpus=domain,managed_irq,10,34` isolates core 10 and hyperthread 34 from the general scheduler
+> - `irqaffinity=0-9,11-33,25-47` directs interrupts away from core 10 and hyperthread 34 
 
-#### Set the poh thread to core 2
+#### Set the poh thread to core 10
 
 add the cli to your validator
 
 ```
 ...
---experimental-poh-pinned-cpu-core 2 \ 
+--experimental-poh-pinned-cpu-core 10 \ 
 ...
 ```
 
 there is a bug with core_affinity if you isolate your cores: [link](https://github.com/anza-xyz/agave/issues/1968)
 
-you can take the next bash script to identify the pid of solpohtickprod and set it to eg. core 2
+you can take the next bash script to identify the pid of solpohtickprod and set it to eg. core 10
 
 ```bash
 #!/bin/bash
@@ -431,24 +431,28 @@ if [ -z "$thread_pid" ]; then
 fi
 
 current_affinity=$(taskset -cp $thread_pid 2>&1 | awk '{print $NF}')
-if [ "$current_affinity" == "2" ]; then
+if [ "$current_affinity" == "10" ]; then
     logger "set_affinity: solPohTickProd_already_set"
     exit 1
 else
-    # set poh to cpu2
-    sudo taskset -cp 2 $thread_pid
+    # set poh to cpu 10
+    sudo taskset -cp 10 $thread_pid
     logger "set_affinity: set_done"
      # $thread_pid
 fi
 ```
 
+### XDP
+
+your validator binary will need to have access to a few higher level permissions.  To give the minimal required set of privileges to the binary run the following command:
+
+```bash
+sudo setcap cap_net_raw,cap_bpf,cap_net_admin=p
+```
+
 ## 🚀 Validator Startup
 
 ### Options
-
-```bash
-
-```
 
 ### Let's use the common one
 
